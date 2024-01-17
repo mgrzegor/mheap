@@ -67,7 +67,7 @@ typedef struct {
 
 
 // Helper macros to align block sizes
-#define MHeapAlignDown(size) ((size) & ~(MHEAP_BLOCK_ALIGN - 1u))
+#define MHeapAlignDown(size) ((size) & ~((size_t)MHEAP_BLOCK_ALIGN - 1u))
 #define MHeapAlignUp(size) MHeapAlignDown((size) + (MHEAP_BLOCK_ALIGN - 1u))
 
 
