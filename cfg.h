@@ -63,6 +63,13 @@
     #ifndef static_assert
       #define static_assert(e, msg) extern int static_assert_dummy_[(e)?1:-1] __attribute__ ((unused))
     #endif
+
+    #ifndef HAVE_WELL_DEFINED_PTR_CMP
+      #ifdef __SANITIZE_ADDRESS__
+        // -fsanitize=pointer-compare disallows comparing pointers to different objects
+        #define HAVE_WELL_DEFINED_PTR_CMP 0
+      #endif
+    #endif
   #endif  /* __GNUC__ */
 
   #ifndef HAVE_WELL_DEFINED_PTR_CMP
