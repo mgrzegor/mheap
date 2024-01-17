@@ -951,9 +951,6 @@ static void *MHeapAllocFreeBlock(
     assert(p_seg->total_free >= req_size);
     p_seg->total_free -= req_size;
 
-    struct mheapblkhdr *p_splitblkhdr =
-            (struct mheapblkhdr *)((char *)p_blkhdr + req_size);
-
     if ((flags & MHEAP_POLICY_ALLOC_HIGH) && rem_size) {
         // allocating high
         if (rem_size < MHEAP_FREEBLKSIZE_MIN) {
@@ -963,16 +960,22 @@ static void *MHeapAllocFreeBlock(
         }
         // otherwise, we only need to adjust the block size
         p_blkhdr->head = rem_size | MHEAPBLK_FLAG_PINUSE;
-        // now create the newly allocated block's header
-        p_splitblkhdr->prev = rem_size;
-        p_splitblkhdr->head = req_size | MHEAPBLK_FLAG_CINUSE;
+        p_nextblkhdr->head |= MHEAPBLK_FLAG_PINUSE;
 #if MHEAP_USE_DOUBLE_LINKS
         p_nextblkhdr->prev = req_size;
 #endif
+        // now create the newly allocated block's header
+        struct mheapblkhdr *p_splitblkhdr =
+                (struct mheapblkhdr *)((char *)p_blkhdr + rem_size);
+        p_splitblkhdr->prev = rem_size;
+        p_splitblkhdr->head = req_size | MHEAPBLK_FLAG_CINUSE;
         return MHeapBlkHdrToBlkPtr(p_splitblkhdr);
     } else {
         // the current free block must go
         MHeapKillFreeBlock(p_seg, p_blk);
+
+        struct mheapblkhdr *p_splitblkhdr =
+                (struct mheapblkhdr *)((char *)p_blkhdr + req_size);
 
         if (rem_size > 0) {
             // make a free block in the remaining part
