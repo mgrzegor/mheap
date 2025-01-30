@@ -983,10 +983,14 @@ static void *MHeapAllocFreeBlock(
                                p_seg,
                                MHeapBlkHdrToBlkPtr(p_splitblkhdr),
                                rem_size);
+        } else {
+            // we're allocating the whole block
+            assert(p_splitblkhdr == p_nextblkhdr);
         }
 
         // make the block allocated
         p_blkhdr->head = req_size | MHEAPBLK_FLAG_CINUSE | MHEAPBLK_FLAG_PINUSE;
+        p_splitblkhdr->head |= MHEAPBLK_FLAG_PINUSE;
 #if MHEAP_USE_DOUBLE_LINKS
         p_splitblkhdr->prev = req_size;
 #endif
